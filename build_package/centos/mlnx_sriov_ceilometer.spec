@@ -1,5 +1,5 @@
 Name:       mlnx-sriov-ceilometer
-Version:    2015.1.0
+Version:    2014.2.1
 Release:    1%{?dist}
 Summary:    Mellnaox SR-IOV ceilometer counters inspector
 License:    GPLv2
