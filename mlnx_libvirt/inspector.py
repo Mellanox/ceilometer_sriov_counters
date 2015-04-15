@@ -20,26 +20,24 @@ from lxml import etree
 import os
 import re
 
-from oslo_config import cfg
 
-from ceilometer.i18n import _
 from ceilometer import utils
 from ceilometer.openstack.common import log
+import ceilometer.compute.virt.libvirt.inspector as libvirt_inspector
 from ceilometer.compute.virt import inspector as virt_inspector
-from ceilometer.compute.virt.libvirt.inspector import LibvirtInspector
 
 PORT_DIRECT_TYPE = "hostdev"
 COUNTERS_DEST = "/sys/class/net/%(if_name)s/vf%(vf)s/statistics/%(cnt_name)s"
 
 
-CONF = cfg.CONF
 LOG = log.getLogger(__name__)
 
-class MlnxLibvirtInspector(LibvirtInspector):
+class MlnxLibvirtInspector(libvirt_inspector.LibvirtInspector):
 
     def __init__(self):
         super(MlnxLibvirtInspector,self).__init__()
-        self.counters_names = ("rx_bytes", "rx_packets", "tx_bytes", "tx_packets")
+        self.counters_names = ("rx_bytes", "rx_packets", "tx_bytes",
+                               "tx_packets")
         self.counters_dic = dict([(key,0) for key in self.counters_names])
         self.regex_get_string = re.compile("\W+")
         self.regex_get_number = re.compile("\d+")
@@ -58,12 +56,13 @@ class MlnxLibvirtInspector(LibvirtInspector):
             except:
                 pass
 
-    def inspect_vnics(self, instance):
-        domain = self._get_domain_not_shut_off_or_raise(instance)
-
+    def inspect_vnics(self, instance_name):
+        domain = self._lookup_by_name(instance_name)
+        state = domain.info()[0]
         tree = etree.fromstring(domain.XMLDesc(0))
-        for iface in tree.findall('devices/interface'):
+        libvirt_global = getattr(libvirt_inspector,'libvirt')
 
+        for iface in tree.findall('devices/interface'):
             if iface.get('type') != PORT_DIRECT_TYPE:
                 #Not SRIOV
                 generator = super(MlnxLibvirtInspector,self).inspect_vnics(
@@ -71,6 +70,12 @@ class MlnxLibvirtInspector(LibvirtInspector):
                 if hasattr(generator,"__iter__"):
                     for gen in generator:
                         yield gen
+                return
+
+            if state == libvirt_global.VIR_DOMAIN_SHUTOFF:
+                LOG.warn(_('Failed to inspect vnics of %(instance_name)s, '
+                           'domain is in state of SHUTOFF'),
+                         {'instance_name': instance_name})
                 return
 
             mac = iface.find('mac')
@@ -93,17 +98,19 @@ class MlnxLibvirtInspector(LibvirtInspector):
             for line in reversed(lines):
                 if mac_address in line:
                     try:
-                        vf_num =  int(self.regex_get_number.search(line).group())
+                        vf_num =  int(self.regex_get_number.search(line)
+                                      .group())
                     except:
                         pass
-                    
+
                 elif vf_num is not None:
                     if self.regex_get_number.match(line) is not None:
                         name = self.regex_get_string.split(line)[1].strip()
                         break
 
             if vf_num is None or name is None:
-                LOG.warning('Unable to reach counters: unknown VF number and interface name')
+                LOG.warning('Unable to reach counters: unknown VF number '
+                            'and interface name')
                 continue
 
             #filtertref (fref) is not supported in SRIOV
