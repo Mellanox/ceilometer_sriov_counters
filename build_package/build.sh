@@ -23,6 +23,7 @@
 # Redistributions in binary form must reproduce both the above copyright
 # notice, one of the license notices in the documentation
 # and/or other materials provided with the distribution.
+set -xe
 readonly SUCCESS=0
 readonly FAILURE=1
 readonly RHEL_DIST="el"
