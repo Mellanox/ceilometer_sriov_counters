@@ -35,7 +35,7 @@ Configuration
 -------------
 
   *	To install the ceilometer just install the rpm file.
-  *	Possiblem configurable parameters – There are no configurable parameters.
+  *	Possible configurable parameters  – There are no configurable parameters.
 
 Description of the traffic counters
 -----------------------------------
@@ -49,7 +49,7 @@ Description of the traffic counters
 Show the traffic counters
 -------------------------
 
-  * From openstack horizon: go to admin -> resource Usage and then query for the counters.
+  * From OpenStack horizon: go to admin -> resource Usage and then query for the counters.
   * From cli run: ceilometer  statistics -m  (counter_name)
 
   ```
