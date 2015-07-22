@@ -1,9 +1,9 @@
-# ceilometer_sriov_counters
-Plugin for Ceilometer SRIOV traffic counters
+# ceilometer_SR-IOV_counters
+Plugin for Ceilometer SR-IOV traffic counters
 
 #### Table of Contents
 
-1. [Overview - What is the Ceilometer SRIOV traffic counters plugin?](#overview)
+1. [Overview - What is the Ceilometer SR-IOV traffic counters plugin?](#overview)
 2. [Module description - What does the module do?](#module-description)
 3. [Prerequisites - The basics to work with the plugin](#prerequisites)
 4. [Configuration - How to configure the plugin?](#configuration)
@@ -13,29 +13,38 @@ Plugin for Ceilometer SRIOV traffic counters
 Overview
 --------
 
-The Ceilometer SRiov traffic counters allow the ceilometer to inspect the traffic counters 
-of the SRiov VM.
+The Mellanox Ceilometer SR-IOV module allows the OpenStack Ceilometer to collect measurements of SR-IOV counters.
 
 Module description
 ------------------
 
-The ceilometer libvirt inspector looking for the interface that binded for the VM.
-The SRiov VM do not create such an interface therefore the libvirt inspector ignore SRiov VM's.
-The Ceilometer SRiov traffic counters plugin is looking for a SRiov VM's and then it acquire the SRiov
-Counters from the SRiov driver and pass the counters to the ceilometer inspector.
+The Mellanox Ceilometer SR-IOV module allows the OpenStack Ceilometer to collect measurements of SR-IOV counters.
+The Ceilometer libvirt inspector looks for the an interface (tap device) that is bound to the VM.
+The VM that is connected via SR-IOV doesn't have such interface therefore the libvirt inspector ignores it.
+The Mellanox Ceilometer SR-IOV module looks for VF PCI Device of the VM, then it acquires the counters from
+the driver and passes the counters to the OpenStack Ceilometer inspector.
 
 Prerequisites
 -------------
 
-  *	Supported OS: RH6.X RH7.X
-  *	OpenStack supported versions: Valid from Juno.
-  *	Other requirements if exists: SRiov enable
+  *     Supported OS: RH6.X RH7.X
+  *     OpenStack supported versions: Juno and later.
+  *     Other requirements if exists: SR-IOV enable
 
 Configuration
 -------------
 
-  *	To install the ceilometer just install the rpm file.
-  *	Possible configurable parameters  – There are no configurable parameters.
+  *     To install the Ceilometer just install rpm file.
+  *     Update /etc/ceilometer/ceilometer.conf
+  ```
+  hypervisor_inspector=mlnx_libvirt
+  ```
+  *     Restart Ceilometer
+  
+  ```
+  RH7:# systemctl restart openstack-ceilometer-compute
+  RH6:# service openstack-ceilometer-compute restart
+  ```
 
 Description of the traffic counters
 -----------------------------------
@@ -45,14 +54,11 @@ Description of the traffic counters
   * network.outgoing.packets
   * network.incoming.packets
 
-
 Show the traffic counters
 -------------------------
 
   * From OpenStack horizon: go to admin -> resource Usage and then query for the counters.
-  * From cli run: ceilometer  statistics -m  (counter_name)
-
+  * From cli run: ceilometer statistics -m (counter_name)
   ```
-  for example: ceilometer  statistics -m network.outgoing.bytes
+  for example: ceilometer statistics -m network.outgoing.bytes
   ```
-
