@@ -1,7 +1,7 @@
 Name:       mlnx-sriov-ceilometer
 Version:    2015.1.0
 Release:    1%{?dist}
-Summary:    Mellnaox SR-IOV ceilometer counters inspector
+Summary:    Mellanox SR-IOV ceilometer counters inspector
 License:    GPLv2
 BuildRoot:  %(mktemp -ud %{_tmppath}/%{name}-%{version}-%{release}-XXXXXX)
 
@@ -10,7 +10,7 @@ BuildRequires:  python-pbr
 Requires:  openstack-ceilometer-compute
 
 %description
-Mellnaox SR-IOV ceilometer counters inspector
+Mellanox SR-IOV ceilometer counters inspector
 
 %build
 %{__python} setup.py build
