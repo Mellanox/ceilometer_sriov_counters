@@ -1,14 +1,7 @@
 # ceilometer_SR-IOV_counters
 Plugin for Ceilometer SR-IOV traffic counters
 
-#### Table of Contents
-
-1. [Overview - What is the Ceilometer SR-IOV traffic counters plugin?](#overview)
-2. [Module description - What does the module do?](#module-description)
-3. [Prerequisites - The basics to work with the plugin](#prerequisites)
-4. [Configuration - How to configure the plugin?](#configuration)
-5. [Description of the traffic counters](#description-of-the-traffic-counters)
-6. [Show the traffic counters](#show-the-traffic-counters)
+.. contents::
 
 Overview
 --------
