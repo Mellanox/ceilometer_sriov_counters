@@ -29,15 +29,16 @@ Configuration
 
   *     To install the Ceilometer just install rpm file.
   *     Update /etc/ceilometer/ceilometer.conf
-  ```
-  hypervisor_inspector=mlnx_libvirt
-  ```
 
-  *     Restart Ceilometer
-  ```
-  RH7:# systemctl restart openstack-ceilometer-compute
-  RH6:# service openstack-ceilometer-compute restart
-  ```
+.. code-block:: bash
+   hypervisor_inspector=mlnx_libvirt
+
+*     Restart Ceilometer
+
+.. code-block:: bash
+   RH7:# systemctl restart openstack-ceilometer-compute
+   RH6:# service openstack-ceilometer-compute restart
+
 
 Description of the traffic counters
 -----------------------------------
@@ -52,22 +53,19 @@ Show the traffic counters
 
   * From OpenStack horizon: go to admin -> resource Usage and then query for the counters.
   * From cli run: ceilometer statistics -m (counter_name)
-  ```
-  for example: ceilometer statistics -m network.outgoing.bytes
-  ```
+
+.. code-block:: bash
+  # ceilometer statistics -m network.outgoing.bytes
+
 
 Change interval between pulling counters
 ________________________________________
 
   *     Update /etc/ceilometer/pipeline.yaml
-  ```
-  sources:
+
+.. code-block:: bash
+   sources:
       - name: network_source
         interval: 600
-  ```
 
   *     Restart Ceilometer
-  ```
-  RH7:# systemctl restart openstack-ceilometer-compute
-  RH6:# service openstack-ceilometer-compute restart
-  ```
