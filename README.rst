@@ -32,8 +32,8 @@ Configuration
   ```
   hypervisor_inspector=mlnx_libvirt
   ```
+
   *     Restart Ceilometer
-  
   ```
   RH7:# systemctl restart openstack-ceilometer-compute
   RH6:# service openstack-ceilometer-compute restart
@@ -54,4 +54,20 @@ Show the traffic counters
   * From cli run: ceilometer statistics -m (counter_name)
   ```
   for example: ceilometer statistics -m network.outgoing.bytes
+  ```
+
+Change interval between pulling counters
+________________________________________
+
+  *     Update /etc/ceilometer/pipeline.yaml
+  ```
+  sources:
+      - name: network_source
+        interval: 600
+  ```
+
+  *     Restart Ceilometer
+  ```
+  RH7:# systemctl restart openstack-ceilometer-compute
+  RH6:# service openstack-ceilometer-compute restart
   ```
