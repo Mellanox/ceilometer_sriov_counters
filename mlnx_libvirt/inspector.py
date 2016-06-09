@@ -24,7 +24,7 @@ from oslo_config import cfg
 
 from ceilometer.i18n import _
 from ceilometer import utils
-from ceilometer.openstack.common import log
+from oslo_log import log
 from ceilometer.compute.virt import inspector as virt_inspector
 from ceilometer.compute.virt.libvirt.inspector import LibvirtInspector
 
@@ -43,6 +43,7 @@ class MlnxLibvirtInspector(LibvirtInspector):
         self.counters_dic = dict([(key,0) for key in self.counters_names])
         self.regex_get_string = re.compile("\W+")
         self.regex_get_number = re.compile("\d+")
+        self.regex_get_vf_number = re.compile("(\s+vf\s)(\d+)([\s+MAC]*)")
 
     def _init_vf_counters(self, if_name, vf_num):
         for counter_name in self.counters_names:
@@ -55,19 +56,20 @@ class MlnxLibvirtInspector(LibvirtInspector):
                 with open(counter_path,'r') as f:
                     counter_value = f.readline().strip()
                     self.counters_dic[counter_name] = int(counter_value)
-            except:
+            except Exception as e:
+                LOG.error("Failed to open counter_path %(counter_path)s %(e)s" %
+                          {'counter_path': counter_path, 'e': e})
                 pass
 
     def inspect_vnics(self, instance):
         domain = self._get_domain_not_shut_off_or_raise(instance)
 
         tree = etree.fromstring(domain.XMLDesc(0))
-        for iface in tree.findall('devices/interface'):
 
+        for iface in tree.findall('devices/interface'):
             if iface.get('type') != PORT_DIRECT_TYPE:
                 #Not SRIOV
-                generator = super(MlnxLibvirtInspector,self).inspect_vnics(
-                                                            instance_name)
+                generator = super(MlnxLibvirtInspector, self).inspect_vnics(instance)
                 if hasattr(generator,"__iter__"):
                     for gen in generator:
                         yield gen
@@ -83,7 +85,7 @@ class MlnxLibvirtInspector(LibvirtInspector):
             try:
                 (output, rc) = utils.execute(*args)
             except:
-                LOG.warning('Unable to run command: %s' % output)
+                LOG.error('Unable to run command: %s' % output)
                 continue
 
             lines = output.split(os.linesep)
@@ -93,17 +95,17 @@ class MlnxLibvirtInspector(LibvirtInspector):
             for line in reversed(lines):
                 if mac_address in line:
                     try:
-                        vf_num =  int(self.regex_get_number.search(line).group())
+                        vf_num =  int(self.regex_get_vf_number.match(line).groups()[1])
                     except:
-                        pass
-                    
+                        continue
+
                 elif vf_num is not None:
                     if self.regex_get_number.match(line) is not None:
                         name = self.regex_get_string.split(line)[1].strip()
                         break
 
             if vf_num is None or name is None:
-                LOG.warning('Unable to reach counters: unknown VF number and interface name')
+                LOG.error('Unable to reach counters: unknown VF number or interface name for MAC=%s' % mac_address)
                 continue
 
             #filtertref (fref) is not supported in SRIOV
