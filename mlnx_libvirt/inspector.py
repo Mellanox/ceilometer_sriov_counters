@@ -16,15 +16,14 @@
 # limitations under the License.
 """Implementation of Inspector abstraction for mlnx_libvirt."""
 
-from lxml import etree
 import os
 import re
 
-from oslo_config import cfg
-
-from ceilometer.i18n import _
 from ceilometer import utils
+from lxml import etree
+from oslo_config import cfg
 from oslo_log import log
+
 from ceilometer.compute.virt import inspector as virt_inspector
 from ceilometer.compute.virt.libvirt.inspector import LibvirtInspector
 
@@ -113,8 +112,9 @@ class MlnxLibvirtInspector(LibvirtInspector):
                                                  fref=None, parameters=None)
 
             self._init_vf_counters(name, vf_num)
-            stats = virt_inspector.InterfaceStats(rx_bytes=self.counters_dic["rx_bytes"],
-                                                  rx_packets=self.counters_dic["rx_packets"],
-                                                  tx_bytes=self.counters_dic["tx_bytes"],
-                                                  tx_packets=self.counters_dic["tx_packets"])
+            stats = virt_inspector.InterfaceStats(
+                rx_bytes=self.counters_dic["rx_bytes"],
+                rx_packets=self.counters_dic["rx_packets"],
+                tx_bytes=self.counters_dic["tx_bytes"],
+                tx_packets=self.counters_dic["tx_packets"])
             yield (interface, stats)
