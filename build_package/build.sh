@@ -1,5 +1,5 @@
 #!/bin/bash
-# Copyright (c) 2014 Mellanox Technologies. All rights reserved.
+# Copyright (c) 2016 Mellanox Technologies. All rights reserved.
 #
 # This Software is licensed under one of the following licenses:
 #
