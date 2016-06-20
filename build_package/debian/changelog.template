@@ -1,0 +1,5 @@
+mlnx-sriov-ceilometer (@@VERSION@@-@@RELEASE@@) unstable; urgency=low
+
+  * Liberty Release
+
+ -- Mellanox <openstack@mellanox.com>  Mon, 20 Jun 2016 09:20:00 +0300
