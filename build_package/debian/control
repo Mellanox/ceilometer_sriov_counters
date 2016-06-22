@@ -1,0 +1,29 @@
+Source: mlnx-sriov-ceilometer
+Section: net
+Priority: optional
+Maintainer: Mellanox  <openstack@mellanox.com>
+Uploaders: Lenny Verkhovsky <lennyb@mellanox.com>
+Build-Depends: debhelper (>= 7),
+Build-Depends-Indep:
+Standards-Version: 7.0.0
+Homepage: https://github.com/Mellanox/ceilometer_sriov_counters
+Vcs-Browser: https://github.com/Mellanox/ceilometer_sriov_counters/tree/stable/liberty
+
+Package: mlnx-sriov-ceilometer
+Architecture: all
+Section: python
+Depends: python-babel,
+         ${misc:Depends},
+         ${python:Depends},
+Recommends:
+Description: The Mellanox Ceilometer SR-IOV module allows the OpenStack
+             Ceilometer to collect measurements of SR-IOV counters.
+             The Ceilometer libvirt inspector looks for the an interface
+             (tap device) that is bound to the VM
+             The VM that is connected via SR-IOV doesn't have such interface
+             therefore the libvirt inspector ignores it.
+             The Mellanox Ceilometer SR-IOV module looks for VF PCI Device
+             of the VM, then it acquires the counters from the driver and
+             passes the counters to the OpenStack Ceilometer inspector
+ .
+ This package provides the Python files for the Mellanox Ceilometer SR-IOV plugin.

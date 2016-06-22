@@ -33,24 +33,24 @@ readonly UBUNTU_FIlE="/etc/os-release"
 
 PACKAGE_NAME="Ceilometer Mellanox SR-IOV inspector"
 DIST=""
-CIRROS_VERSION="0.3.2"
-CIRROS_RELEASE="1"
+CEILOMETER_VERSION="7.0.0"
+CEILOMETER_RELEASE="0"
 ROOT_RPMBUILD="/root/rpmbuild/"
 BUILD_DEST="$ROOT_RPMBUILD/BUILD/"
 BUILD_TARGET=$(pwd)
 
 function check_dist() {
-    if [  -f ${REDHAT_FILE} ]; then
-        if  grep -q -i "release 6" ${REDHAT_FILE} || grep -q -i "release 7" ${REDHAT_FILE}  ; then
+    if [ -f ${REDHAT_FILE} ]; then
+        if grep -q -i "release 6" ${REDHAT_FILE} || grep -q -i "release 7" ${REDHAT_FILE}; then
             DIST=${RHEL_DIST}
         else
             echo "$PACKAGE_NAME Support only CentOS and RedHat Release 6 or 7"
             exit ${FAILURE}
         fi
-    elif  [  -f ${UBUNTU_FIlE} ]; then
+    elif [ -f ${UBUNTU_FIlE} ]; then
         DIST=${UBUNTU_DIST}
     else
-        echo "$PACKAGE_NAME Support only CentOS 6 and Ubuntu"
+        echo "$PACKAGE_NAME Supports only CentOS 6 and Ubuntu"
         exit ${FAILURE}
     fi
 }
@@ -66,15 +66,30 @@ function build_rpm(){
 }
 
 function update_deb_version(){
-    sed "s/@@VERSION@@/${CIRROS_VERSION}/g;s/@@RELEASE@@/${CIRROS_RELEASE}/g" debian/changelog.template > debian/changelog
+    sed "s/@@VERSION@@/${CEILOMETER_VERSION}/g;s/@@RELEASE@@/${CEILOMETER_RELEASE}/g" debian/changelog.template > debian/changelog
+    if [ $? != ${SUCCESS} ] ; then
+        echo "Failed to update deb version"
+        deb_cleanup
+        exit ${FAILURE}
+    fi
 }
 
 function build_deb(){
-    cp $IMG_FILE ubuntu
-    cd ubuntu
+    deb_cleanup
+    cp -rf ../setup.py ../setup.cfg ../README.rst .
+    mkdir -p ceilometer/compute/virt
+    cp -rf ../mlnx_libvirt ceilometer/compute/virt/
+
     update_deb_version
-    dpkg-buildpackage -tc -uc
+    export DEB_BUILD_OPTIONS=nocheck
+    dpkg-buildpackage -b --force-sign
 }
+
+function deb_cleanup() {
+    echo "Cleaning"
+    rm -rf AUTHORS ChangeLog README.rst mlnx_sriov_ceilometer.egg-info setup.cfg setup.py
+}
+
 
 check_dist
 if [ $DIST == $RHEL_DIST ]; then
