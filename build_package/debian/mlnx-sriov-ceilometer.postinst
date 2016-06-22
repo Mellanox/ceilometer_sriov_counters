@@ -1,0 +1,11 @@
+ep_file_path=$(find /usr/ -name entry_points.txt | grep  "/ceilometer[^/]*egg-info")
+ep_value="mlnx_libvirt = ceilometer.compute.virt.mlnx_libvirt.inspector:MlnxLibvirtInspector"
+section=ceilometer.compute.virt
+if grep -q "^\[$section\]" $ep_file_path ; then
+        if ! grep --no-message -q "$ep_value" $ep_file_path ; then
+                sed -i "/\[$section\]/a $ep_value" $ep_file_path
+        fi
+else
+        echo "ERROR: Can not find section: $section in file: $ep_file_path"
+        exit 1
+fi
