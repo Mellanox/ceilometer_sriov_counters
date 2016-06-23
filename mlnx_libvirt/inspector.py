@@ -34,30 +34,31 @@ COUNTERS_DEST = "/sys/class/net/%(if_name)s/vf%(vf)s/statistics/%(cnt_name)s"
 CONF = cfg.CONF
 LOG = log.getLogger(__name__)
 
+
 class MlnxLibvirtInspector(LibvirtInspector):
 
     def __init__(self):
-        super(MlnxLibvirtInspector,self).__init__()
-        self.counters_names = ("rx_bytes", "rx_packets", "tx_bytes", "tx_packets")
-        self.counters_dic = dict([(key,0) for key in self.counters_names])
+        super(MlnxLibvirtInspector, self).__init__()
+        self.counters_names = ("rx_bytes", "rx_packets",
+                               "tx_bytes", "tx_packets")
+        self.counters_dic = dict([(key, 0) for key in self.counters_names])
         self.regex_get_string = re.compile("\W+")
         self.regex_get_number = re.compile("\d+")
-        self.regex_get_vf_number = re.compile("(\s+vf\s)(\d+)([\s+MAC]*)")
+        self.regex_get_vf = re.compile("(\s+vf\s)(\d+)([\s+MAC]*)")
 
     def _init_vf_counters(self, if_name, vf_num):
         for counter_name in self.counters_names:
-            counter_path = COUNTERS_DEST % {
-                                            "if_name":if_name,
+            counter_path = COUNTERS_DEST % {"if_name": if_name,
                                             "vf": vf_num,
                                             "cnt_name": counter_name
-                                           }
+                                            }
             try:
-                with open(counter_path,'r') as f:
+                with open(counter_path, 'r') as f:
                     counter_value = f.readline().strip()
                     self.counters_dic[counter_name] = int(counter_value)
             except Exception as e:
-                LOG.error("Failed to open counter_path %(counter_path)s %(e)s" %
-                          {'counter_path': counter_path, 'e': e})
+                LOG.error("Failed to open counter_path %(path)s %(e)s" %
+                          {'path': counter_path, 'e': e})
                 pass
 
     def inspect_vnics(self, instance):
@@ -67,9 +68,10 @@ class MlnxLibvirtInspector(LibvirtInspector):
 
         for iface in tree.findall('devices/interface'):
             if iface.get('type') != PORT_DIRECT_TYPE:
-                #Not SRIOV
-                generator = super(MlnxLibvirtInspector, self).inspect_vnics(instance)
-                if hasattr(generator,"__iter__"):
+                # Not SRIOV
+                generator = super(MlnxLibvirtInspector,
+                                  self).inspect_vnics(instance)
+                if hasattr(generator, "__iter__"):
                     for gen in generator:
                         yield gen
                 return
@@ -80,10 +82,10 @@ class MlnxLibvirtInspector(LibvirtInspector):
             else:
                 continue
 
-            args = ["ip" ,"link", "show"]
+            args = ["ip", "link", "show"]
             try:
                 (output, rc) = utils.execute(*args)
-            except:
+            except Exception:
                 LOG.error('Unable to run command: %s' % output)
                 continue
 
@@ -94,8 +96,8 @@ class MlnxLibvirtInspector(LibvirtInspector):
             for line in reversed(lines):
                 if mac_address in line:
                     try:
-                        vf_num =  int(self.regex_get_vf_number.match(line).groups()[1])
-                    except:
+                        vf_num = int(self.regex_get_vf.match(line).groups()[1])
+                    except Exception:
                         continue
 
                 elif vf_num is not None:
@@ -104,10 +106,11 @@ class MlnxLibvirtInspector(LibvirtInspector):
                         break
 
             if vf_num is None or name is None:
-                LOG.error('Unable to reach counters: unknown VF number or interface name for MAC=%s' % mac_address)
+                LOG.error('Unable to reach counters: unknown VF number or " \
+                        "interface name for MAC=%s' % mac_address)
                 continue
 
-            #filtertref (fref) is not supported in SRIOV
+            # filtertref (fref) is not supported in SRIOV
             interface = virt_inspector.Interface(name=name, mac=mac_address,
                                                  fref=None, parameters=None)
 
